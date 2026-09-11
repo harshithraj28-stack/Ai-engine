@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ResQ-Verse - AI Multimodal Crisis to Action Orchestration Engine for First Responders">
+    <title>{{ app_name }}</title>
+    
+    <!-- Google Fonts & Leaflet CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="theme-dark">
+    <!-- Screen Reader Skip Link for WCAG Accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to crisis action board</a>
+
+    <!-- Top Navigation & Status Bar -->
+    <header class="app-header" role="banner">
+        <div class="header-container">
+            <div class="brand-group">
+                <div class="brand-badge pulse-dot" aria-hidden="true"></div>
+                <div class="brand-text">
+                    <h1>ResQ-Verse <span class="badge-vibe">AI Crisis Engine</span></h1>
+                    <p class="tagline">Unstructured Real-World Signals &rarr; Verified Life-Saving Actions</p>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <div class="system-status-chip" id="system-status" aria-label="System status">
+                    <span class="status-indicator online"></span>
+                    <span id="status-text">Cloud Run Online</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btn-settings" aria-label="Configure Gemini API Key">
+                    ⚙️ Settings
+                </button>
+                <button class="btn btn-secondary btn-sm" id="toggle-contrast" aria-label="Toggle High Contrast Mode">
+                    👁️ High Contrast
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main id="main-content" class="main-layout" role="main">
+        
+        <!-- Left Panel: Multimodal Input Ingestion Hub -->
+        <section class="panel input-panel" aria-labelledby="input-hub-heading">
+            <div class="panel-header">
+                <h2 id="input-hub-heading">
+                    <span class="icon" aria-hidden="true">📡</span> Multimodal Crisis Ingestion Hub
+                </h2>
+                <span class="badge badge-info">Multi-Stream Input</span>
+            </div>
+
+            <!-- Quick Scenario Presets for Fast Judging -->
+            <div class="scenario-selector-box">
+                <label for="scenario-dropdown" class="section-label">⚡ 1-Click Judging Scenarios:</label>
+                <div class="scenario-actions">
+                    <select id="scenario-dropdown" class="form-select" aria-label="Select preloaded test crisis scenario">
+                        {% for s in scenarios %}
+                        <option value="{{ s.id }}">{{ s.title }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-preset" id="btn-load-scenario" aria-label="Load selected crisis scenario data">
+                        Load Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input Modalities Tabs -->
+            <form id="crisis-form" class="ingestion-form">
+                
+                <!-- 1. Voice / 911 Call Stream -->
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label for="input-voice" class="input-label">
+                            🎙️ 911 Voice Call & Dispatch Audio
+                        </label>
+                        <div class="audio-record-controls">
+                            <button type="button" class="btn btn-sm btn-mic" id="btn-record-audio" aria-label="Record voice call from microphone">
+                                <span class="mic-icon" aria-hidden="true">🔴</span> <span id="record-text">Record Voice</span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="input-voice" class="form-textarea" rows="3" placeholder="Frantic 911 caller speech, dispatch radio chatter, acoustic distress signals..."></textarea>
+                </div>
+
+                <!-- 2. Medical History / EHR Stack -->
+                <div class="form-group">
+                    <label for="input-medical" class="input-label">
+                        🏥 Messy Medical History / Handwritten Notes / EHR
+                    </label>
+                    <textarea id="input-medical" class="form-textarea" rows="2" placeholder="Chronic conditions (hemophilia, stent, asthma), allergies (penicillin, NSAIDs), medications..."></textarea>
+                </div>
+
+                <!-- 3. Traffic Sensors & Road Conditions -->
+                <div class="form-group">
+                    <label for="input-traffic" class="input-label">
+                        🚗 Live Traffic Sensors & Highway Cameras
+                    </label>
+                    <textarea id="input-traffic" class="form-textarea" rows="2" placeholder="Submerged roads, bridge collapse alerts, blocked lanes, gridlocked arteries..."></textarea>
+                </div>
+
+                <!-- 4. Weather & Environmental Data -->
+                <div class="form-group">
+                    <label for="input-weather" class="input-label">
+                        ⛈️ Severe Weather & Environmental Monitors
+                    </label>
+                    <textarea id="input-weather" class="form-textarea" rows="2" placeholder="Flash flood rainfall rate, hurricane wind vectors, chemical plume dispersion models..."></textarea>
+                </div>
+
+                <!-- 5. News & Citizen Social SOS Feeds -->
+                <div class="form-group">
+                    <label for="input-news" class="input-label">
+                        📢 Breaking News Tickers & Citizen Social SOS Feeds
+                    </label>
+                    <textarea id="input-news" class="form-textarea" rows="2" placeholder="Breaking broadcast alerts, Twitter SOS tags, citizen drone reports..."></textarea>
+                </div>
+
+                <!-- 6. Scene Damage Photo / Vision Tags -->
+                <div class="form-group">
+                    <label for="input-photo" class="input-label">
+                        📸 Scene Damage Photo Analysis & Visual Evidence
+                    </label>
+                    <textarea id="input-photo" class="form-textarea" rows="2" placeholder="Visual observation: vehicle submerged to roofline, cracked foundation, flame flare..."></textarea>
+                </div>
+
+                <!-- Action Button -->
+                <div class="action-submit-row">
+                    <button type="button" class="btn btn-primary btn-lg btn-pulse" id="btn-process-crisis" aria-label="Process inputs and generate life-saving action plan">
+                        <span class="btn-icon" aria-hidden="true">⚡</span> Instantly Convert to Life-Saving Actions
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="btn-clear-inputs" aria-label="Clear all input fields">
+                        Clear
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Right Panel: Verified Life-Saving Actions Command Center -->
+        <section class="panel output-panel" aria-labelledby="action-center-heading">
+            <div class="panel-header">
+                <h2 id="action-center-heading">
+                    <span class="icon" aria-hidden="true">🛡️</span> Verified Tactical & Clinical Actions
+                </h2>
+                <div class="action-indicators">
+                    <span id="latency-badge" class="badge badge-success">Latency: -- ms</span>
+                    <span id="engine-badge" class="badge badge-google">Google Gemini AI</span>
+                </div>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div id="loading-state" class="loading-container hidden" role="status" aria-live="polite">
+                <div class="radar-spinner" aria-hidden="true"></div>
+                <p class="loading-title">Synthesizing Multimodal Signals...</p>
+                <p class="loading-sub">Running Anti-Hallucination Triangulation & Clinical Triage Matrix</p>
+            </div>
+
+            <!-- Empty State Placeholder -->
+            <div id="empty-state" class="empty-placeholder">
+                <div class="placeholder-icon" aria-hidden="true">🚨</div>
+                <h3>Awaiting Chaotic Field Telemetry</h3>
+                <p>Select a 1-click judging scenario on the left or type/record messy field data, then click <strong>"Instantly Convert to Life-Saving Actions"</strong>.</p>
+            </div>
+
+            <!-- Active Output Dashboard -->
+            <div id="output-dashboard" class="dashboard-content hidden" role="region" aria-live="polite">
+
+                <!-- Alert Banner / Verification Header -->
+                <div class="crisis-summary-card" id="crisis-banner">
+                    <div class="summary-top">
+                        <span class="severity-pill red" id="banner-severity">CRITICAL RED</span>
+                        <h3 id="banner-incident-name">Emergency Response</h3>
+                        <span class="corroboration-score" id="banner-confidence">98% Verified</span>
+                    </div>
+                    <p class="location-line" id="banner-location">📍 Epicenter: Lincoln Bridge & River Parkway</p>
+                    <div class="hazards-list" id="banner-hazards"></div>
+                </div>
+
+                <!-- Anti-Hallucination Verification Audit Trail -->
+                <div class="card verification-card">
+                    <div class="card-header">
+                        <h4>🔍 Signal Corroboration & Anti-Hallucination Audit</h4>
+                        <span class="badge badge-verified">Multi-Source Cross-Corroborated</span>
+                    </div>
+                    <div class="card-body">
+                        <ul class="verification-signals-list" id="verification-signals-list"></ul>
+                        <div id="conflicts-container" class="conflicts-box hidden">
+                            <strong>⚠️ Conflict Resolutions:</strong>
+                            <ul id="conflicts-list"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- START Emergency Triage Patient Matrix -->
+                <div class="card triage-card">
+                    <div class="card-header">
+                        <h4>🩺 Clinical START Triage & Patient Directives</h4>
+                        <span class="badge badge-subtle">Simple Triage & Rapid Treatment</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="patient-grid" id="patient-cards-container"></div>
+                    </div>
+                </div>
+
+                <!-- Emergency Dispatch & Fleet Routing -->
+                <div class="card dispatch-card">
+                    <div class="card-header">
+                        <h4>🚑 Priority Fleet Dispatch & Egress Routing</h4>
+                        <span class="badge badge-subtle">Hazard-Aware Waypoints</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="fleet-list" id="fleet-list-container"></div>
+                    </div>
+                </div>
+
+                <!-- Incident Tactical Map -->
+                <div class="card map-card">
+                    <div class="card-header">
+                        <h4>🗺️ Live Geocoded Tactical Map & Exclusion Corridors</h4>
+                        <span class="badge badge-subtle">Hazard Perimeter & Trauma Hub</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="tactical-map" class="map-container" role="application" aria-label="Interactive incident map showing epicenter, hazard zone, and hospital route"></div>
+                    </div>
+                </div>
+
+                <!-- Hospital Pre-Arrival SBAR Report -->
+                <div class="card sbar-card">
+                    <div class="card-header">
+                        <h4>🏥 Hospital Pre-Arrival Trauma Notification (SBAR)</h4>
+                        <button class="btn btn-sm btn-copy" id="btn-copy-sbar" aria-label="Copy SBAR report to clipboard">📋 Copy SBAR</button>
+                    </div>
+                    <div class="card-body sbar-content" id="sbar-content-body">
+                        <div class="sbar-row"><strong>S - Situation:</strong> <span id="sbar-situation"></span></div>
+                        <div class="sbar-row"><strong>B - Background:</strong> <span id="sbar-background"></span></div>
+                        <div class="sbar-row"><strong>A - Assessment:</strong> <span id="sbar-assessment"></span></div>
+                        <div class="sbar-row"><strong>R - Recommendation:</strong> <span id="sbar-recommendation"></span></div>
+                    </div>
+                </div>
+
+                <!-- Common Alerting Protocol (CAP) Civilian Broadcast -->
+                <div class="card cap-card">
+                    <div class="card-header">
+                        <h4>📢 Common Alerting Protocol (CAP OASIS v1.2) Broadcast</h4>
+                        <a id="btn-download-cap" href="#" target="_blank" class="btn btn-sm btn-export" aria-label="Download standardized CAP XML">
+                            💾 Export CAP XML
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <p class="cap-headline" id="cap-headline"></p>
+                        <p class="cap-instruction" id="cap-instruction"></p>
+                        <small class="cap-meta" id="cap-meta"></small>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal for Gemini API Key -->
+    <div id="settings-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <h3 id="modal-title">⚙️ Configure Gemini Intelligence API</h3>
+            <p>Enter your Google Gemini API Key below. If left blank, ResQ-Verse seamlessly operates in its high-speed grounded heuristic mode.</p>
+            <div class="form-group">
+                <label for="user-gemini-key">Gemini API Key:</label>
+                <input type="password" id="user-gemini-key" class="form-input" placeholder="AIzaSy...">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="btn-save-settings">Save & Apply</button>
+                <button class="btn btn-secondary" id="btn-close-settings">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
