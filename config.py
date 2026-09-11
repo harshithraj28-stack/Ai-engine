@@ -27,7 +27,7 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max payload
 
 # AI & Multimodal Engine (Google Gemini)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", os.environ.get("GOOGLE_API_KEY", "")).strip()
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 
 # Upload and Storage Paths
 UPLOAD_FOLDER = BASE_DIR / "uploads"

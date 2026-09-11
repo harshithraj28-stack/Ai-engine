@@ -9,6 +9,14 @@ import json
 import logging
 import re
 from typing import Dict, Any, Optional, Tuple
+
+# Enable Windows system certificate trust store for HTTPS calls
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except Exception:
+    pass
+
 import config
 from core.models import CrisisRawInput, ExtractedSignals
 
@@ -30,34 +38,62 @@ class GeminiService:
     def extract_signals(cls, raw: CrisisRawInput, api_key: Optional[str] = None) -> Tuple[ExtractedSignals, str]:
         """Extract structured crisis signals using Gemini AI with deterministic fallback."""
         active_key = api_key or config.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
+        model_name = getattr(config, "GEMINI_MODEL", "gemini-3.6-flash")
 
-        if HAS_GENAI_LIB and active_key:
+        if active_key:
+            # 1. Try official SDK with REST transport
+            if HAS_GENAI_LIB:
+                try:
+                    genai.configure(api_key=active_key, transport="rest")
+                    model = genai.GenerativeModel(model_name)
+                    prompt = cls._build_extraction_prompt(raw)
+                    response = model.generate_content(prompt)
+                    extracted_json = cls._parse_json_from_response(response.text)
+
+                    if extracted_json:
+                        return cls._create_signals_from_json(extracted_json), f"Google Gemini ({model_name})"
+                except Exception as e:
+                    logger.warning(f"Gemini SDK call failed: {e}")
+
+            # 2. Try direct HTTPS REST endpoint (100% platform compatible, Vercel & Cloud Run ready)
             try:
-                genai.configure(api_key=active_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
-
+                import requests
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={active_key}"
                 prompt = cls._build_extraction_prompt(raw)
-                response = model.generate_content(prompt)
-                extracted_json = cls._parse_json_from_response(response.text)
-
-                if extracted_json:
-                    return ExtractedSignals(
-                        incident_name=extracted_json.get("incident_name", "Emergency Response Action"),
-                        incident_type=extracted_json.get("incident_type", "Multi-Threat Crisis"),
-                        location_name=extracted_json.get("location_name", "Metro Intersection"),
-                        latitude=float(extracted_json.get("latitude", 37.7749)),
-                        longitude=float(extracted_json.get("longitude", -122.4194)),
-                        estimated_casualties=int(extracted_json.get("estimated_casualties", 2)),
-                        primary_severity=extracted_json.get("primary_severity", "RED"),
-                        critical_risks=extracted_json.get("critical_risks", ["Trauma and environmental hazards"]),
-                        environmental_hazards=extracted_json.get("environmental_hazards", ["Severe weather"]),
-                        road_closures=extracted_json.get("road_closures", ["Main arterial closure"]),
-                    ), "Google Gemini 1.5 Flash (Cloud API)"
+                payload = {
+                    "contents": [{"parts": [{"text": prompt}]}]
+                }
+                res = requests.post(url, json=payload, timeout=8)
+                if res.status_code == 200:
+                    resp_json = res.json()
+                    cand = resp_json.get("candidates", [{}])[0]
+                    text_out = cand.get("content", {}).get("parts", [{}])[0].get("text", "")
+                    extracted_json = cls._parse_json_from_response(text_out)
+                    if extracted_json:
+                        return cls._create_signals_from_json(extracted_json), f"Google Gemini Cloud ({model_name})"
+                else:
+                    logger.warning(f"Gemini REST returned HTTP {res.status_code}: {res.text[:200]}")
             except Exception as e:
-                logger.warning(f"Gemini API call failed, falling back to heuristic engine: {e}")
+                logger.warning(f"Direct Gemini REST API failed: {e}")
 
         # Intelligent Heuristic Fallback Engine
         return cls._heuristic_extraction(raw), "ResQ-Verse Heuristic Neural Engine (Grounded Offline Mode)"
+
+    @staticmethod
+    def _create_signals_from_json(data: Dict[str, Any]) -> ExtractedSignals:
+        """Construct ExtractedSignals model from parsed JSON."""
+        return ExtractedSignals(
+            incident_name=data.get("incident_name", "Emergency Response Action"),
+            incident_type=data.get("incident_type", "Multi-Threat Crisis"),
+            location_name=data.get("location_name", "Metro Intersection"),
+            latitude=float(data.get("latitude", 37.7749)),
+            longitude=float(data.get("longitude", -122.4194)),
+            estimated_casualties=int(data.get("estimated_casualties", 2)),
+            primary_severity=data.get("primary_severity", "RED"),
+            critical_risks=data.get("critical_risks", ["Trauma and environmental hazards"]),
+            environmental_hazards=data.get("environmental_hazards", ["Severe weather"]),
+            road_closures=data.get("road_closures", ["Main arterial closure"]),
+        )
 
     @classmethod
     def _build_extraction_prompt(cls, raw: CrisisRawInput) -> str:
