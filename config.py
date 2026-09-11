@@ -29,9 +29,16 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max payload
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", os.environ.get("GOOGLE_API_KEY", "")).strip()
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 
-# Upload and Storage Paths
-UPLOAD_FOLDER = BASE_DIR / "uploads"
-UPLOAD_FOLDER.mkdir(exist_ok=True)
+# Upload and Storage Paths (Serverless safe for Vercel and Cloud Run)
+try:
+    if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        UPLOAD_FOLDER = Path("/tmp/uploads")
+    else:
+        UPLOAD_FOLDER = BASE_DIR / "uploads"
+    UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+except Exception:
+    UPLOAD_FOLDER = Path("/tmp")
+
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
 ALLOWED_AUDIO_EXTENSIONS = {"wav", "mp3", "ogg", "m4a", "webm"}
 
