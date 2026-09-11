@@ -18,7 +18,11 @@ from core.verification_engine import VerificationEngine
 from core.triage_planner import TriagePlanner
 from core.mock_scenarios import get_all_scenarios, get_scenario_by_id
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder=str(config.BASE_DIR / "templates"),
+    static_folder=str(config.BASE_DIR / "static")
+)
 app.config["SECRET_KEY"] = config.SECRET_KEY
 app.config["MAX_CONTENT_LENGTH"] = config.MAX_CONTENT_LENGTH
 

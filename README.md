@@ -4,11 +4,11 @@
 > *Track: Build with AI | "From Chaos to Care: Converting Unstructured Real-World Signals into Instant, Verified Life-Saving Actions"*
 
 [![Google Gemini](https://img.shields.io/badge/Google_Gemini-1.5_Flash-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel&logoColor=white)](https://vercel.com/harshithraj28-stacks-projects)
 [![Google Cloud Run](https://img.shields.io/badge/Google_Cloud_Run-Ready_Container-4285F4?logo=googlecloud&logoColor=white)](https://cloud.google.com/run)
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/Tests-16%20Passed%20(100%25)-success)](https://pytest.org/)
 [![Accessibility](https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-purple)](https://www.w3.org/WAI/standards-guidelines/wcag/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
@@ -25,7 +25,8 @@ In catastrophic emergencies (flash floods, hazardous material explosions, struct
 
 ## 🚀 Live Demo & Quick Links
 
-- **GitHub Repository**: [https://github.com/RITHWIKRAJV/RITHWIKRAJV](https://github.com/RITHWIKRAJV/RITHWIKRAJV) *(or project repo)*
+- **GitHub Repository**: [https://github.com/harshithraj28-stack/Ai-engine](https://github.com/harshithraj28-stack/Ai-engine)
+- **Vercel Project**: [https://vercel.com/harshithraj28-stacks-projects](https://vercel.com/harshithraj28-stacks-projects)
 - **Health Check Endpoint**: `GET /api/health`
 - **Common Alerting Protocol (CAP) XML**: `GET /api/export/cap/<incident_id>`
 
@@ -131,9 +132,23 @@ Open your browser at `http://localhost:8080`.
 
 ---
 
+## 🌐 Vercel Deployment Guide (1-Click)
+
+ResQ-Verse is fully configured for Vercel Serverless Functions via `vercel.json` and `api/index.py`.
+
+### Deploying via Vercel Dashboard
+1. Go to your Vercel Dashboard: [https://vercel.com/harshithraj28-stacks-projects](https://vercel.com/harshithraj28-stacks-projects)
+2. Click **"Add New..." &rarr; "Project"** (or go to [https://vercel.com/new](https://vercel.com/new)).
+3. Import the GitHub repository: **`harshithraj28-stack/Ai-engine`**.
+4. (Optional) Add Environment Variable:
+   - `GEMINI_API_KEY`: Your Google Gemini API Key.
+5. Click **Deploy**. Vercel will automatically build and assign a production URL (e.g. `https://ai-engine-xxxx.vercel.app`)!
+
+---
+
 ## ☁️ Google Cloud Run Deployment Guide
 
-ResQ-Verse is built specifically for Google Cloud Run (Slide 8):
+ResQ-Verse is also built specifically for Google Cloud Run (Slide 8):
 - Default port binding to `$PORT` (8080)
 - Stateless architecture
 - Production WSGI server (`gunicorn`)
