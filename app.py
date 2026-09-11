@@ -7,6 +7,7 @@ import os
 import time
 import uuid
 import xml.etree.ElementTree as ET
+from pathlib import Path
 from flask import Flask, request, jsonify, render_template, Response
 from flask_cors import CORS
 from pydantic import ValidationError
@@ -18,10 +19,27 @@ from core.verification_engine import VerificationEngine
 from core.triage_planner import TriagePlanner
 from core.mock_scenarios import get_all_scenarios, get_scenario_by_id
 
+current_dir = Path(__file__).resolve().parent
+template_candidates = [
+    current_dir / "templates",
+    current_dir.parent / "templates",
+    Path("/var/task/templates"),
+    Path("templates")
+]
+template_dir = next((str(p) for p in template_candidates if p.exists()), str(current_dir / "templates"))
+
+static_candidates = [
+    current_dir / "static",
+    current_dir.parent / "static",
+    Path("/var/task/static"),
+    Path("static")
+]
+static_dir = next((str(p) for p in static_candidates if p.exists()), str(current_dir / "static"))
+
 app = Flask(
     __name__,
-    template_folder=str(config.BASE_DIR / "templates"),
-    static_folder=str(config.BASE_DIR / "static")
+    template_folder=template_dir,
+    static_folder=static_dir
 )
 app.config["SECRET_KEY"] = config.SECRET_KEY
 app.config["MAX_CONTENT_LENGTH"] = config.MAX_CONTENT_LENGTH
@@ -49,13 +67,28 @@ def index():
     """Render the accessible real-time command dashboard."""
     scenarios = get_all_scenarios()
     has_api_key = bool(config.GEMINI_API_KEY)
-    return render_template(
-        "index.html",
-        app_name=config.APP_NAME,
-        app_version=config.APP_VERSION,
-        scenarios=scenarios,
-        has_api_key=has_api_key
-    )
+    try:
+        return render_template(
+            "index.html",
+            app_name=config.APP_NAME,
+            app_version=config.APP_VERSION,
+            scenarios=scenarios,
+            has_api_key=has_api_key
+        )
+    except Exception:
+        # Fallback in case template loader was isolated by serverless bundler
+        for p in template_candidates:
+            html_file = p / "index.html"
+            if html_file.exists():
+                from jinja2 import Template
+                with open(html_file, "r", encoding="utf-8") as f:
+                    return Template(f.read()).render(
+                        app_name=config.APP_NAME,
+                        app_version=config.APP_VERSION,
+                        scenarios=scenarios,
+                        has_api_key=has_api_key
+                    )
+        raise
 
 
 @app.route("/api/health", methods=["GET"])
