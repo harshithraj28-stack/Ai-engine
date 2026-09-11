@@ -12,7 +12,805 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+/* ==========================================================================
+   ResQ-Verse UI Stylesheet
+   Theme: High-Tech Emergency Command Center (Glassmorphism + Dark Mode)
+   WCAG 2.1 AA Compliant: Contrast ratios >= 4.5:1, Accessible Focus States
+   ========================================================================== */
+
+:root {
+    --bg-primary: #0b0f19;
+    --bg-secondary: #111827;
+    --bg-card: rgba(17, 24, 39, 0.85);
+    --bg-card-hover: rgba(31, 41, 55, 0.9);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-highlight: rgba(99, 102, 241, 0.4);
+
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+
+    --accent-blue: #3b82f6;
+    --accent-indigo: #6366f1;
+    --accent-red: #ef4444;
+    --accent-yellow: #f59e0b;
+    --accent-green: #10b981;
+    --accent-cyan: #06b6d4;
+
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+}
+
+/* High Contrast Mode for Accessibility */
+body.high-contrast {
+    --bg-primary: #000000;
+    --bg-secondary: #121212;
+    --bg-card: #181818;
+    --border-color: #ffffff;
+    --text-primary: #ffffff;
+    --text-secondary: #e5e5e5;
+    --accent-blue: #60a5fa;
+    --accent-red: #ff4d4f;
+    --accent-yellow: #ffc53d;
+    --accent-green: #52c41a;
+}
+
+/* Reset & Base */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Accessibility Focus States */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 10px;
+    background: var(--accent-indigo);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: top 0.2s;
+}
+.skip-to-content:focus {
+    top: 10px;
+}
+
+/* Top Header Bar */
+.app-header {
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-container {
+    max-width: 1700px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.pulse-dot {
+    width: 14px;
+    height: 14px;
+    background-color: var(--accent-red);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-red);
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.brand-text h1 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge-vibe {
+    font-size: 0.7rem;
+    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.tagline {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.system-status-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 12px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+}
+
+.status-indicator.online {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-green);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--accent-green);
+}
+
+/* Layout Grid */
+.main-layout {
+    max-width: 1700px;
+    margin: 20px auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 480px 1fr;
+    gap: 24px;
+    flex: 1;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Panels */
+.panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.panel-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Scenario Selector Box */
+.scenario-selector-box {
+    background: rgba(99, 102, 241, 0.08);
+    border-bottom: 1px solid var(--border-color);
+    padding: 14px 20px;
+}
+
+.section-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+}
+
+.scenario-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.form-select {
+    flex: 1;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.btn-preset {
+    background: var(--accent-indigo);
+    color: white;
+    font-weight: 600;
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.btn-preset:hover {
+    background: #4f46e5;
+}
+
+/* Forms */
+.ingestion-form {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    max-height: calc(100vh - 220px);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.input-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.btn-mic {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-mic.recording {
+    background: var(--accent-red);
+    color: white;
+    animation: pulse 1s infinite;
+}
+
+.form-textarea {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    padding: 10px 12px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    resize: vertical;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.form-textarea:focus {
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.action-submit-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.btn {
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    color: white;
+    padding: 14px 24px;
+    font-size: 0.95rem;
+    flex: 1;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.45);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+}
+
+/* Badges */
+.badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-info { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+.badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+.badge-google { background: rgba(234, 67, 53, 0.2); color: #fca5a5; }
+.badge-subtle { background: rgba(255, 255, 255, 0.1); color: var(--text-secondary); }
+.badge-verified { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+/* Right Panel: Output & Cards */
+.output-panel {
+    min-height: 800px;
+}
+
+.empty-placeholder {
+    padding: 80px 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+}
+
+.empty-placeholder h3 {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.empty-placeholder p {
+    max-width: 500px;
+    margin: 0 auto;
+    font-size: 0.95rem;
+}
+
+/* Loading State */
+.loading-container {
+    padding: 100px 40px;
+    text-align: center;
+}
+
+.radar-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(99, 102, 241, 0.2);
+    border-top-color: var(--accent-cyan);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.loading-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Active Dashboard */
+.dashboard-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+.crisis-summary-card {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(17, 24, 39, 0.9));
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: var(--radius-md);
+    padding: 18px 24px;
+}
+
+.summary-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+}
+
+.severity-pill {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+}
+
+.severity-pill.red {
+    background-color: var(--accent-red);
+    color: white;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+}
+
+.summary-top h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    flex: 1;
+}
+
+.corroboration-score {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.2);
+    color: #6ee7b7;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.location-line {
+    font-size: 0.95rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+}
+
+.hazards-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hazard-chip {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    color: #cbd5e1;
+}
+
+/* Cards */
+.card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 16px 18px;
+}
+
+/* Verification Signals List */
+.verification-signals-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ver-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent-green);
+    font-size: 0.85rem;
+}
+
+.ver-claim {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.ver-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.conflicts-box {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: #fde68a;
+}
+
+/* Patient Grid */
+.patient-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.patient-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.patient-card.tag-red { border-top: 4px solid var(--accent-red); }
+.patient-card.tag-yellow { border-top: 4px solid var(--accent-yellow); }
+.patient-card.tag-green { border-top: 4px solid var(--accent-green); }
+.patient-card.tag-black { border-top: 4px solid #4b5563; }
+
+.patient-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pt-tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+.pt-tag.RED { background: var(--accent-red); color: white; }
+.pt-tag.YELLOW { background: var(--accent-yellow); color: black; }
+.pt-tag.GREEN { background: var(--accent-green); color: white; }
+
+.pt-detail-line {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.pt-detail-line strong {
+    color: var(--text-primary);
+}
+
+.pt-intervention {
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: #fca5a5;
+    border-left: 2px solid var(--accent-red);
+}
+
+/* Fleet List */
+.fleet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fleet-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.fleet-unit-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.fleet-route {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.fleet-eta {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent-cyan);
+    background: rgba(6, 182, 212, 0.1);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+}
+
+/* Map Container */
+.map-container {
+    height: 300px;
+    width: 100%;
+    border-radius: var(--radius-sm);
+    z-index: 10;
+}
+
+/* SBAR */
+.sbar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.sbar-row strong {
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+}
+
+/* CAP Alert */
+.cap-headline {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: 6px;
+}
+
+.cap-instruction {
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    margin-bottom: 8px;
+}
+
+.cap-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-card h3 {
+    margin-bottom: 12px;
+}
+
+.modal-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.form-input {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    font-size: 0.9rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+</style>
 </head>
 <body class="theme-dark">
     <!-- Screen Reader Skip Link for WCAG Accessibility -->
@@ -280,7 +1078,467 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+/**
+ * Leaflet Tactical Incident Map Visualizer for ResQ-Verse.
+ * Renders emergency epicenter, hazard exclusion zones, road closures, and ER routing.
+ */
+
+let mapInstance = null;
+let markersLayer = null;
+
+function initTacticalMap(lat = 37.7833, lng = -122.4167, locationName = "Incident Epicenter") {
+    const mapElement = document.getElementById("tactical-map");
+    if (!mapElement) return;
+
+    // Reset if previously initialized
+    if (mapInstance) {
+        mapInstance.remove();
+        mapInstance = null;
+    }
+
+    // Initialize Map with dark-matter open tiles
+    mapInstance = L.map("tactical-map", {
+        center: [lat, lng],
+        zoom: 14,
+        zoomControl: true,
+        attributionControl: false
+    });
+
+    // Dark-themed tactical tiles (CartoDB DarkMatter)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        subdomains: "abcd"
+    }).addTo(mapInstance);
+
+    markersLayer = L.layerGroup().addTo(mapInstance);
+
+    updateTacticalMap(lat, lng, locationName, []);
+}
+
+function updateTacticalMap(lat, lng, locationName, hazards = []) {
+    if (!mapInstance || !markersLayer) {
+        initTacticalMap(lat, lng, locationName);
+        return;
+    }
+
+    markersLayer.clearLayers();
+
+    // 1. Incident Epicenter Marker (Red pulsing icon)
+    const redIcon = L.divIcon({
+        className: 'custom-pin-incident',
+        html: `<div style="background-color: #ef4444; width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 15px #ef4444; display: flex; align-items: center; justify-content: center; font-size: 11px;">⚠️</div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    const incidentMarker = L.marker([lat, lng], { icon: redIcon })
+        .bindPopup(`<b>🚨 Incident Epicenter</b><br>${locationName}<br><b>Lat:</b> ${lat.toFixed(4)}, <b>Lng:</b> ${lng.toFixed(4)}`)
+        .openPopup();
+    markersLayer.addLayer(incidentMarker);
+
+    // 2. Hazard Perimeter Exclusion Zone (Red Circle)
+    const hazardRadius = 750; // 750 meters
+    const hazardCircle = L.circle([lat, lng], {
+        color: '#ef4444',
+        fillColor: '#ef4444',
+        fillOpacity: 0.2,
+        radius: hazardRadius,
+        weight: 2,
+        dashArray: '6, 6'
+    }).bindPopup("<b>⚠️ Hot Zone Exclusion Perimeter (750m)</b><br>Respiratory / Flash Hazard Active");
+    markersLayer.addLayer(hazardCircle);
+
+    // 3. St. Jude Trauma Hospital Marker (Blue / Green)
+    const hospLat = lat + 0.015;
+    const hospLng = lng - 0.012;
+    const hospIcon = L.divIcon({
+        className: 'custom-pin-hosp',
+        html: `<div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 10px #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 11px;">🏥</div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    const hospMarker = L.marker([hospLat, hospLng], { icon: hospIcon })
+        .bindPopup("<b>🏥 St. Jude Level 1 Trauma Center</b><br>Receiving ER & Surgical Suites");
+    markersLayer.addLayer(hospMarker);
+
+    // 4. Safe Ingress / Egress Route Polyline (Green glowing path)
+    const safeRoutePoints = [
+        [lat, lng],
+        [lat + 0.005, lng - 0.004],
+        [lat + 0.010, lng - 0.008],
+        [hospLat, hospLng]
+    ];
+
+    const safePolyline = L.polyline(safeRoutePoints, {
+        color: '#10b981',
+        weight: 4,
+        opacity: 0.85,
+        dashArray: '8, 8'
+    }).bindPopup("<b>🟢 Verified Clear Corridor</b><br>Lincoln Arterial Bypass (ETA: 4 mins)");
+    markersLayer.addLayer(safePolyline);
+
+    // Pan map to epicenter
+    mapInstance.setView([lat, lng], 14);
+
+    // Ensure Leaflet tiles render correctly if container resized
+    setTimeout(() => {
+        if (mapInstance) mapInstance.invalidateSize();
+    }, 200);
+}
+
+window.initTacticalMap = initTacticalMap;
+window.updateTacticalMap = updateTacticalMap;
+
+</script>
+    <script>
+/**
+ * Main Client Controller for ResQ-Verse Crisis Action Engine.
+ * Handles multimodal data submission, Web Speech recording, API orchestration, and UI rendering.
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Elements
+    const scenarioDropdown = document.getElementById("scenario-dropdown");
+    const btnLoadScenario = document.getElementById("btn-load-scenario");
+    const btnProcessCrisis = document.getElementById("btn-process-crisis");
+    const btnClearInputs = document.getElementById("btn-clear-inputs");
+    const btnRecordAudio = document.getElementById("btn-record-audio");
+    const recordText = document.getElementById("record-text");
+    const toggleContrast = document.getElementById("toggle-contrast");
+
+    // Input fields
+    const inputVoice = document.getElementById("input-voice");
+    const inputMedical = document.getElementById("input-medical");
+    const inputTraffic = document.getElementById("input-traffic");
+    const inputWeather = document.getElementById("input-weather");
+    const inputNews = document.getElementById("input-news");
+    const inputPhoto = document.getElementById("input-photo");
+
+    // Output views
+    const emptyState = document.getElementById("empty-state");
+    const loadingState = document.getElementById("loading-state");
+    const outputDashboard = document.getElementById("output-dashboard");
+
+    // Output fields
+    const bannerSeverity = document.getElementById("banner-severity");
+    const bannerIncidentName = document.getElementById("banner-incident-name");
+    const bannerConfidence = document.getElementById("banner-confidence");
+    const bannerLocation = document.getElementById("banner-location");
+    const bannerHazards = document.getElementById("banner-hazards");
+    const verificationSignalsList = document.getElementById("verification-signals-list");
+    const conflictsContainer = document.getElementById("conflicts-container");
+    const conflictsList = document.getElementById("conflicts-list");
+    const patientCardsContainer = document.getElementById("patient-cards-container");
+    const fleetListContainer = document.getElementById("fleet-list-container");
+    const sbarSituation = document.getElementById("sbar-situation");
+    const sbarBackground = document.getElementById("sbar-background");
+    const sbarAssessment = document.getElementById("sbar-assessment");
+    const sbarRecommendation = document.getElementById("sbar-recommendation");
+    const btnCopySbar = document.getElementById("btn-copy-sbar");
+    const capHeadline = document.getElementById("cap-headline");
+    const capInstruction = document.getElementById("cap-instruction");
+    const capMeta = document.getElementById("cap-meta");
+    const btnDownloadCap = document.getElementById("btn-download-cap");
+    const latencyBadge = document.getElementById("latency-badge");
+    const engineBadge = document.getElementById("engine-badge");
+
+    // Settings Modal
+    const btnSettings = document.getElementById("btn-settings");
+    const settingsModal = document.getElementById("settings-modal");
+    const btnCloseSettings = document.getElementById("btn-close-settings");
+    const btnSaveSettings = document.getElementById("btn-save-settings");
+    const userGeminiKeyInput = document.getElementById("user-gemini-key");
+
+    // Saved Gemini Key in localStorage
+    let currentApiKey = localStorage.getItem("resq_gemini_api_key") || "";
+    if (userGeminiKeyInput) userGeminiKeyInput.value = currentApiKey;
+
+    // Load initial scenario on startup
+    loadSelectedScenario();
+
+    // 1. Scenario Loader
+    btnLoadScenario.addEventListener("click", (e) => {
+        e.preventDefault();
+        loadSelectedScenario();
+    });
+
+    async function loadSelectedScenario() {
+        const scenarioId = scenarioDropdown.value;
+        try {
+            const res = await fetch(`/api/scenarios/${scenarioId}`);
+            const json = await res.json();
+            if (json.status === "success" && json.data) {
+                const d = json.data.data;
+                inputVoice.value = d.voice_transcript || "";
+                inputMedical.value = d.medical_history || "";
+                inputTraffic.value = d.traffic_feed || "";
+                inputWeather.value = d.weather_data || "";
+                inputNews.value = d.news_social_sos || "";
+                inputPhoto.value = d.photo_description || "";
+            }
+        } catch (err) {
+            console.error("Failed to load scenario:", err);
+        }
+    }
+
+    // 2. Clear inputs
+    btnClearInputs.addEventListener("click", () => {
+        inputVoice.value = "";
+        inputMedical.value = "";
+        inputTraffic.value = "";
+        inputWeather.value = "";
+        inputNews.value = "";
+        inputPhoto.value = "";
+        inputVoice.focus();
+    });
+
+    // 3. Web Speech Recognition for Voice Stream
+    let recognition = null;
+    let isRecording = false;
+
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+            let transcript = "";
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                transcript += event.results[i][0].transcript;
+            }
+            inputVoice.value = (inputVoice.value ? inputVoice.value + " " : "") + transcript;
+        };
+
+        recognition.onerror = (event) => {
+            console.warn("Speech recognition error:", event.error);
+            stopRecording();
+        };
+
+        recognition.onend = () => {
+            stopRecording();
+        };
+    }
+
+    btnRecordAudio.addEventListener("click", () => {
+        if (!recognition) {
+            alert("Live Web Speech API is not supported in this browser. Please type or paste the voice transcript directly.");
+            return;
+        }
+
+        if (!isRecording) {
+            try {
+                recognition.start();
+                isRecording = true;
+                btnRecordAudio.classList.add("recording");
+                recordText.textContent = "Listening (Stop)...";
+            } catch (err) {
+                console.error("Mic error:", err);
+            }
+        } else {
+            recognition.stop();
+            stopRecording();
+        }
+    });
+
+    function stopRecording() {
+        isRecording = false;
+        btnRecordAudio.classList.remove("recording");
+        recordText.textContent = "Record Voice";
+    }
+
+    // 4. Process Multimodal Crisis Button
+    btnProcessCrisis.addEventListener("click", async () => {
+        const payload = {
+            voice_transcript: inputVoice.value.trim(),
+            medical_history: inputMedical.value.trim(),
+            traffic_feed: inputTraffic.value.trim(),
+            weather_data: inputWeather.value.trim(),
+            news_social_sos: inputNews.value.trim(),
+            photo_description: inputPhoto.value.trim()
+        };
+
+        // UI states
+        emptyState.classList.add("hidden");
+        outputDashboard.classList.add("hidden");
+        loadingState.classList.remove("hidden");
+
+        const headers = { "Content-Type": "application/json" };
+        if (currentApiKey) {
+            headers["X-Gemini-Key"] = currentApiKey;
+        }
+
+        try {
+            const res = await fetch("/api/process", {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
+
+            const json = await res.json();
+            loadingState.classList.add("hidden");
+
+            if (json.status === "success" && json.data) {
+                renderActionPlan(json.data);
+                outputDashboard.classList.remove("hidden");
+            } else {
+                alert("Error processing crisis input: " + (json.message || "Unknown error"));
+                emptyState.classList.remove("hidden");
+            }
+        } catch (err) {
+            loadingState.classList.add("hidden");
+            emptyState.classList.remove("hidden");
+            console.error("API error:", err);
+            alert("Failed to communicate with ResQ-Verse engine: " + err.message);
+        }
+    });
+
+    // 5. Render Action Plan
+    function renderActionPlan(plan) {
+        // Latency & Engine
+        latencyBadge.textContent = `Latency: ${plan.processing_time_ms} ms`;
+        engineBadge.textContent = plan.engine_mode;
+
+        // Incident Banner
+        const sig = plan.signals;
+        bannerIncidentName.textContent = sig.incident_name;
+        bannerSeverity.textContent = `CRITICAL ${sig.primary_severity}`;
+        bannerSeverity.className = `severity-pill ${sig.primary_severity.toLowerCase()}`;
+        bannerConfidence.textContent = `${plan.verification.overall_confidence}% Corroborated`;
+        bannerLocation.textContent = `📍 Epicenter: ${sig.location_name} (Lat: ${sig.latitude.toFixed(4)}, Lng: ${sig.longitude.toFixed(4)})`;
+
+        // Hazards
+        bannerHazards.innerHTML = "";
+        sig.environmental_hazards.forEach(h => {
+            const chip = document.createElement("span");
+            chip.className = "hazard-chip";
+            chip.textContent = `⚠️ ${h}`;
+            bannerHazards.appendChild(chip);
+        });
+
+        // Verification Signals
+        verificationSignalsList.innerHTML = "";
+        plan.verification.verification_signals.forEach(vs => {
+            const li = document.createElement("li");
+            li.className = "ver-item";
+            li.innerHTML = `
+                <div>
+                    <div class="ver-claim">${vs.claim}</div>
+                    <div class="ver-meta">
+                        <b>Origin:</b> ${vs.source_origin} | 
+                        <b>Corroboration:</b> ${vs.corroborating_sources.join(", ") || "Single Stream"} | 
+                        <b>Status:</b> <span style="color: #34d399">${vs.status}</span>
+                    </div>
+                </div>
+            `;
+            verificationSignalsList.appendChild(li);
+        });
+
+        // Conflicts
+        if (plan.verification.conflicts_detected && plan.verification.conflicts_detected.length > 0) {
+            conflictsContainer.classList.remove("hidden");
+            conflictsList.innerHTML = "";
+            plan.verification.conflicts_detected.forEach(c => {
+                const cli = document.createElement("li");
+                cli.textContent = c;
+                conflictsList.appendChild(cli);
+            });
+        } else {
+            conflictsContainer.classList.add("hidden");
+        }
+
+        // Patients (START Triage)
+        patientCardsContainer.innerHTML = "";
+        plan.patients.forEach(pt => {
+            const card = document.createElement("div");
+            card.className = `patient-card tag-${pt.triage_tag.toLowerCase()}`;
+            
+            const vitalsStr = Object.entries(pt.critical_vitals)
+                .map(([k, v]) => `<span>${k}: <b>${v}</b></span>`)
+                .join(" | ");
+
+            card.innerHTML = `
+                <div class="patient-header">
+                    <strong>${pt.patient_id} (${pt.age_gender_indicator})</strong>
+                    <span class="pt-tag ${pt.triage_tag}">${pt.triage_tag}</span>
+                </div>
+                <div class="pt-detail-line"><strong>Conditions:</strong> ${pt.identified_conditions.join(", ")}</div>
+                <div class="pt-detail-line"><strong>Allergies:</strong> <span style="color:#fca5a5">${pt.known_allergies.join(", ")}</span></div>
+                <div class="pt-detail-line"><strong>Vitals:</strong> ${vitalsStr}</div>
+                <div class="pt-intervention">
+                    <strong>⚡ Immediate Field SOP:</strong> ${pt.immediate_field_intervention}
+                </div>
+            `;
+            patientCardsContainer.appendChild(card);
+        });
+
+        // Dispatched Fleet
+        fleetListContainer.innerHTML = "";
+        plan.dispatched_fleet.forEach(unit => {
+            const row = document.createElement("div");
+            row.className = "fleet-row";
+            row.innerHTML = `
+                <div>
+                    <div class="fleet-unit-name">🚨 ${unit.unit_id} — ${unit.unit_type}</div>
+                    <div class="fleet-route"><b>Route:</b> ${unit.assigned_route} (${unit.route_status})</div>
+                    <div class="fleet-route"><b>Equipment:</b> ${unit.specialized_equipment.join(", ")}</div>
+                </div>
+                <div class="fleet-eta">ETA: ${unit.eta_minutes}m</div>
+            `;
+            fleetListContainer.appendChild(row);
+        });
+
+        // Hospital SBAR
+        const sbar = plan.hospital_sbar;
+        sbarSituation.textContent = sbar.situation;
+        sbarBackground.textContent = sbar.background;
+        sbarAssessment.textContent = sbar.assessment;
+        sbarRecommendation.textContent = sbar.recommendation;
+
+        // CAP Broadcast
+        const cap = plan.cap_alert;
+        capHeadline.textContent = cap.headline;
+        capInstruction.textContent = cap.instruction;
+        capMeta.textContent = `Broadcast Scope: ${cap.scope} | Urgency: ${cap.urgency} | Certainty: ${cap.certainty} | Identifier: ${cap.identifier}`;
+        btnDownloadCap.href = `/api/export/cap/${plan.incident_id}`;
+
+        // Initialize Tactical Map
+        if (window.updateTacticalMap) {
+            window.updateTacticalMap(sig.latitude, sig.longitude, sig.location_name, sig.environmental_hazards);
+        }
+    }
+
+    // 6. Copy SBAR to Clipboard
+    btnCopySbar.addEventListener("click", () => {
+        const text = `SBAR REPORT:\n\nSITUATION: ${sbarSituation.textContent}\n\nBACKGROUND: ${sbarBackground.textContent}\n\nASSESSMENT: ${sbarAssessment.textContent}\n\nRECOMMENDATION: ${sbarRecommendation.textContent}`;
+        navigator.clipboard.writeText(text).then(() => {
+            btnCopySbar.textContent = "✅ Copied!";
+            setTimeout(() => { btnCopySbar.textContent = "📋 Copy SBAR"; }, 2000);
+        });
+    });
+
+    // 7. High Contrast Mode Toggle
+    toggleContrast.addEventListener("click", () => {
+        document.body.classList.toggle("high-contrast");
+    });
+
+    // 8. Settings Modal
+    btnSettings.addEventListener("click", () => {
+        settingsModal.classList.remove("hidden");
+    });
+    btnCloseSettings.addEventListener("click", () => {
+        settingsModal.classList.add("hidden");
+    });
+    btnSaveSettings.addEventListener("click", () => {
+        currentApiKey = userGeminiKeyInput.value.trim();
+        localStorage.setItem("resq_gemini_api_key", currentApiKey);
+        settingsModal.classList.add("hidden");
+        alert(currentApiKey ? "Gemini API Key saved for session." : "Offline Heuristic Mode active.");
+    });
+});
+
+</script>
 </body>
 </html>
